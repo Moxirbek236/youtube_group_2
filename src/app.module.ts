@@ -8,8 +8,13 @@ import { PlaylistVideosModule } from './modules/playlist-videos/playlist-videos.
 import { LikesModule } from './modules/likes/likes.module';
 import { WatchHistorysModule } from './modules/watch-historys/watch-historys.module';
 import { NotificationModule } from './modules/notification/notification.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [UsersModule, VideosModule, CommentsModule, SubscriptionsModule, PlaylistsModule, PlaylistVideosModule, LikesModule, WatchHistorysModule, NotificationModule]
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    UsersModule, VideosModule, CommentsModule, SubscriptionsModule, PlaylistsModule, PlaylistVideosModule, LikesModule, WatchHistorysModule, NotificationModule]
 })
 export class AppModule {}
