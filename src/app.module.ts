@@ -12,11 +12,19 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './modules/auth/auth.module';
 import { PrismaModule } from './core/prisma/prisma.module';
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    JwtModule.register({
+      global:true,
+      secret:"Shaftoli",
+      signOptions:{
+        expiresIn:"2h"
+      }
     }),
     PrismaModule,
     CloudinaryModule,
@@ -30,7 +38,6 @@ import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
     LikesModule, 
     WatchHistorysModule, 
     NotificationModule, 
-
   ]
 })
 export class AppModule {}
