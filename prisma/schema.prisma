@@ -101,12 +101,13 @@ model Comment {
 model Subscription {
   id                   String   @id @default(cuid())
   subscriberId         String
-  subscriber           User     @relation("UserSubscriptions", fields: [subscriberId], references: [id], onDelete: Cascade)
   channelId            String
-  channel              User     @relation("UserSubscribers", fields: [channelId], references: [id], onDelete: Cascade)
   notificationsEnabled Boolean  @default(true)
   createdAt            DateTime @default(now())
 
+  subscriber           User     @relation("UserSubscriptions", fields: [subscriberId], references: [id], onDelete: Cascade)
+  channel              User     @relation("UserSubscribers", fields: [channelId], references: [id], onDelete: Cascade)
+  
   @@unique([subscriberId, channelId])
 }
 
