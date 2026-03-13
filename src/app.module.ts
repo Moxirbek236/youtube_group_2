@@ -9,12 +9,28 @@ import { LikesModule } from './modules/likes/likes.module';
 import { WatchHistorysModule } from './modules/watch-historys/watch-historys.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { ConfigModule } from '@nestjs/config';
+import { AuthModule } from './modules/auth/auth.module';
+import { PrismaModule } from './core/prisma/prisma.module';
+import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    UsersModule, VideosModule, CommentsModule, SubscriptionsModule, PlaylistsModule, PlaylistVideosModule, LikesModule, WatchHistorysModule, NotificationModule]
+    PrismaModule,
+    CloudinaryModule,
+    AuthModule,
+    UsersModule, 
+    VideosModule, 
+    CommentsModule, 
+    SubscriptionsModule, 
+    PlaylistsModule, 
+    PlaylistVideosModule, 
+    LikesModule, 
+    WatchHistorysModule, 
+    NotificationModule, 
+
+  ]
 })
 export class AppModule {}
