@@ -2,7 +2,6 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { RegisterDto } from './dto/authDto';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
-import { emit } from 'process';
 
 
 @Injectable()

@@ -10,14 +10,21 @@ import { WatchHistorysModule } from './modules/watch-historys/watch-historys.mod
 import { NotificationModule } from './modules/notification/notification.module';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './core/prisma/prisma.module';
-import { JwtGlobalModule } from './common/config/jwt.module';
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
-import { AuthModule } from './modules/auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
+import { AuthModule } from './modules/auth/auth.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    JwtModule.register({
+      global:true,
+      secret:"Shaftoli",
+      signOptions:{
+        expiresIn:"2h"
+      }
     }),
     PrismaModule,
     CloudinaryModule,
@@ -31,7 +38,6 @@ import { JwtModule } from '@nestjs/jwt';
     LikesModule, 
     WatchHistorysModule, 
     NotificationModule, 
-
   ]
 })
 export class AppModule {}

@@ -14,15 +14,16 @@ import { SubscriptionsService } from './subscriptions.service';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 
-import { ApiTags, ApiOperation, ApiParam, ApiBody } from '@nestjs/swagger';
-import { AuthGuard } from 'src/common/guards/checkToken.guard';
+import { ApiTags, ApiOperation, ApiParam, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { RolesGuard } from 'src/common/guards/checkRole.guard';
 import { Role } from '@prisma/client';
 import { Roles } from 'src/common/decorators/role.decorators';
 import { PaginationDto } from './entities/subscription.entity';
+import { AuthGuard } from 'src/common/guards/auth.guard';
 
 @ApiTags('Channels Subsciptes')
 @UseGuards(AuthGuard, RolesGuard)
+@ApiBearerAuth('token')
 @Controller('channels')
 export class SubscriptionsController {
   constructor(private readonly subscriptionsService: SubscriptionsService) {}
