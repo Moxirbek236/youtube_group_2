@@ -29,6 +29,7 @@ export class AuthController {
     },
   })
   @UseInterceptors(FileInterceptor("avatar"))
+  
   async register(
     @Body() payload: RegisterDto,
     @UploadedFile() avatar?: Express.Multer.File
