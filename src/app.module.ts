@@ -11,23 +11,27 @@ import { NotificationModule } from './modules/notification/notification.module';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './core/prisma/prisma.module';
 import { JwtGlobalModule } from './common/config/jwt.module';
-
+import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { JwtModule } from '@nestjs/jwt';
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    JwtGlobalModule,
     PrismaModule,
-    UsersModule,
-    VideosModule,
-    CommentsModule,
-    SubscriptionsModule,
-    PlaylistsModule,
-    PlaylistVideosModule,
-    LikesModule,
-    WatchHistorysModule,
-    NotificationModule,
-  ],
+    CloudinaryModule,
+    AuthModule,
+    UsersModule, 
+    VideosModule, 
+    CommentsModule, 
+    SubscriptionsModule, 
+    PlaylistsModule, 
+    PlaylistVideosModule, 
+    LikesModule, 
+    WatchHistorysModule, 
+    NotificationModule, 
+
+  ]
 })
 export class AppModule {}

@@ -13,7 +13,7 @@ import { PaginationDto } from './entities/subscription.entity';
 export class SubscriptionsService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async create(createSubscriptionDto: any, subscriberid: string) {
+  async create(createSubscriptionDto: any, subscriberid: number) {
     const subscriber = await this.prismaService.user.findFirst({
       where: {
         id: subscriberid,
@@ -53,7 +53,7 @@ export class SubscriptionsService {
     };
   }
 
-  async findMeSubsctiptions(ownerid: string, query?: PaginationDto) {
+  async findMeSubsctiptions(ownerid: number, query?: PaginationDto) {
     const page = Number(query?.page) || 1;
     const limit = Number(query?.limit) || 10;
 
@@ -79,14 +79,14 @@ export class SubscriptionsService {
     return {};
   }
 
-  findOne(id: string, ownerid: string) {
+  findOne(id: number, ownerid: number) {
     return `This action returns a #${id} subscription`;
   }
 
   async update(
-    id: string,
+    id: number,
     updateSubscriptionDto: UpdateSubscriptionDto,
-    ownerid: string,
+    ownerid: number,
   ) {
     const owner_db = await this.prismaService.user.findFirst({
       where: {
@@ -130,7 +130,7 @@ export class SubscriptionsService {
     };
   }
 
-  async remove(id: string, ownerid: string) {
+  async remove(id: number, ownerid: number) {
     const owner_db = await this.prismaService.user.findFirst({
       where: {
         id: ownerid,
