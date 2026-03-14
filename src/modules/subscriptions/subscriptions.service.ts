@@ -54,7 +54,6 @@ export class SubscriptionsService {
   }
 
   async findMeSubsctiptions(ownerid: number, query?: PaginationDto) {
-    console.log('salom');
 
     const page = Number(query?.page) || 1;
     const limit = Number(query?.limit) || 10;
@@ -92,7 +91,6 @@ export class SubscriptionsService {
     };
   }
   async findMeSubsctiptionsFeed(ownerid: number, query?: PaginationDto) {
-    console.log('salom');
 
     const page = Number(query?.page) || 1;
     const limit = Number(query?.limit) || 10;
@@ -135,7 +133,7 @@ export class SubscriptionsService {
     return {
       succes: true,
       status: 200,
-      data: subscriptionsMe,
+      data: feedVideos,
     };
   }
 

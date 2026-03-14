@@ -36,6 +36,8 @@ export class AuthController {
   ) {
     if (avatar) {
       payload.avatar = await this.cloudinaryService.uploadImage(avatar)
+    } else {
+      payload.avatar = "https://res.cloudinary.com/demo/image/upload/d_avatar.png/non_existing_id.png"
     }
     return this.authService.register(payload)
   }

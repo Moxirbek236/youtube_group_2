@@ -27,7 +27,8 @@ export class PlaylistsService {
 
     return {
       success: true,
-      message: 'Playlist successfully created ✅',
+      status: 201,
+      message: 'Playlist yaratildi',
       data,
     };
   }
@@ -53,7 +54,7 @@ export class PlaylistsService {
 
     return {
       success: true,
-      message: 'Playlists successfully fetched ✅',
+      status: 200,
       data,
       meta: {
         total,
@@ -75,14 +76,14 @@ export class PlaylistsService {
       },
     });
 
-    if (!data) throw new NotFoundException('Playlist not found ❌');
+    if (!data) throw new NotFoundException('Playlist topilmadi');
     if (data.authorId !== authorId)
-      throw new ForbiddenException('Access denied ❌');
+      throw new ForbiddenException('Sizga ruxsat yoq');
 
     return {
       success: true,
-      message: 'Playlist successfully fetched ✅',
       data,
+      status: 200,
     };
   }
 
@@ -91,9 +92,9 @@ export class PlaylistsService {
       where: { id: Number(id) },
     });
 
-    if (!existing) throw new NotFoundException('Playlist not found ❌');
+    if (!existing) throw new NotFoundException('Playlist topilmadi');
     if (existing.authorId !== authorId)
-      throw new ForbiddenException('Access denied ❌');
+      throw new ForbiddenException('Sizga ruxsat yoq');
 
     const data = await this.prisma.playlist.update({
       where: { id: Number(id) },
@@ -108,7 +109,7 @@ export class PlaylistsService {
 
     return {
       success: true,
-      message: 'Playlist successfully updated ✅',
+      message: 'Playlist yangilandi',
       data,
     };
   }
@@ -118,15 +119,15 @@ export class PlaylistsService {
       where: { id: Number(id) },
     });
 
-    if (!existing) throw new NotFoundException('Playlist not found ❌');
+    if (!existing) throw new NotFoundException('Playlist topilmadi');
     if (existing.authorId !== authorId)
-      throw new ForbiddenException('Access denied ❌');
+      throw new ForbiddenException('Sizga ruxsat yoq');
 
     await this.prisma.playlist.delete({ where: { id: Number(id) } });
 
     return {
       success: true,
-      message: 'Playlist successfully deleted ✅',
+      message: 'Playlist ochirildi',
     };
   }
 }

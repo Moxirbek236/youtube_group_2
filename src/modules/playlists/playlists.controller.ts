@@ -26,7 +26,7 @@ import { Roles } from 'src/common/decorators/role.decorators';
 import { PaginationDto } from './entities/playlist.entity';
 import { AuthGuard } from 'src/common/guards/auth.guard';
 
-@ApiTags('Playlists')
+@ApiTags('playlists')
 @UseGuards(AuthGuard, RolesGuard)
 @ApiBearerAuth('token')
 @Controller('playlists')
