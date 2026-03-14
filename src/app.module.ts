@@ -9,12 +9,35 @@ import { LikesModule } from './modules/likes/likes.module';
 import { WatchHistorysModule } from './modules/watch-historys/watch-historys.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { ConfigModule } from '@nestjs/config';
+import { PrismaModule } from './core/prisma/prisma.module';
+import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
+import { JwtModule } from '@nestjs/jwt';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    UsersModule, VideosModule, CommentsModule, SubscriptionsModule, PlaylistsModule, PlaylistVideosModule, LikesModule, WatchHistorysModule, NotificationModule]
+    JwtModule.register({
+      global:true,
+      secret:"Shaftoli",
+      signOptions:{
+        expiresIn:"2h"
+      }
+    }),
+    PrismaModule,
+    CloudinaryModule,
+    AuthModule,
+    UsersModule, 
+    VideosModule, 
+    CommentsModule, 
+    SubscriptionsModule, 
+    PlaylistsModule, 
+    PlaylistVideosModule, 
+    LikesModule, 
+    WatchHistorysModule, 
+    NotificationModule, 
+  ]
 })
 export class AppModule {}
