@@ -14,7 +14,13 @@ import { SubscriptionsService } from './subscriptions.service';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 
-import { ApiTags, ApiOperation, ApiParam, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiParam,
+  ApiBody,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { RolesGuard } from 'src/common/guards/checkRole.guard';
 import { Role } from '@prisma/client';
 import { Roles } from 'src/common/decorators/role.decorators';
@@ -43,17 +49,18 @@ export class SubscriptionsController {
     );
   }
 
-  @Get()
+  @Get('all/me')
   @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
   @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
   findAll(@Req() req: any, @Query() query?: PaginationDto) {
-    if (!query) {
-      query = {
-        limit:0,
-        page:0
-      }
-      return this.subscriptionsService.findMeSubsctiptions(req['user'].id, query);
-    }
+    return this.subscriptionsService.findMeSubsctiptions(req['user'].id, query);
+  }
+
+  @Get('all/feeds/me')
+  @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
+  @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
+  findAllFeeds(@Req() req: any, @Query() query?: PaginationDto) {
+    return this.subscriptionsService.findMeSubsctiptionsFeed(req['user'].id, query);
   }
 
   @Get(':id')

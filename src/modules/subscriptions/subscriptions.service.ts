@@ -54,6 +54,8 @@ export class SubscriptionsService {
   }
 
   async findMeSubsctiptions(ownerid: number, query?: PaginationDto) {
+    console.log('salom');
+
     const page = Number(query?.page) || 1;
     const limit = Number(query?.limit) || 10;
 
@@ -63,8 +65,6 @@ export class SubscriptionsService {
       where: {
         id: ownerid,
       },
-      skip: skip,
-      take: limit,
     });
     if (!find_owner) {
       throw new NotFoundException('Token xato!!!');
@@ -72,11 +72,71 @@ export class SubscriptionsService {
 
     const subscriptionsMe = await this.prismaService.subscription.findMany({
       where: {
-        channelId: ownerid,
+        subscriberId: ownerid,
       },
+      select: {
+        id: true,
+        notificationsEnabled: true,
+        createdAt: true,
+        channel: true,
+        subscriber: true,
+      },
+      skip: skip,
+      take: limit,
     });
 
-    return {};
+    return {
+      succes: true,
+      status: 200,
+      data: subscriptionsMe,
+    };
+  }
+  async findMeSubsctiptionsFeed(ownerid: number, query?: PaginationDto) {
+    console.log('salom');
+
+    const page = Number(query?.page) || 1;
+    const limit = Number(query?.limit) || 10;
+
+    const skip = (page - 1) * limit;
+
+    const find_owner = await this.prismaService.user.findFirst({
+      where: {
+        id: ownerid,
+      },
+    });
+    if (!find_owner) {
+      throw new NotFoundException('Token xato!!!');
+    }
+
+    const subscriptionsMe = await this.prismaService.subscription.findMany({
+      where: {
+        subscriberId: ownerid,
+      },
+      select: {
+        id: true,
+        notificationsEnabled: true,
+        createdAt: true,
+        channelId: true,
+      },
+      skip: skip,
+      take: limit,
+    });
+
+    let feedVideos;
+
+    for (let channel = 0; channel < subscriptionsMe.length; channel++) {
+      const element = subscriptionsMe[channel];
+      feedVideos = await this.prismaService.video.findMany({
+        where: { authorId: element.channelId},
+      });
+    }
+    
+    console.log(feedVideos); 
+    return {
+      succes: true,
+      status: 200,
+      data: subscriptionsMe,
+    };
   }
 
   findOne(id: number, ownerid: number) {
@@ -92,7 +152,7 @@ export class SubscriptionsService {
       where: {
         id: ownerid,
       },
-      select:{subscriptions:true}
+      select: { subscriptions: true },
     });
 
     const subscription = await this.prismaService.subscription.findFirst({
@@ -166,9 +226,9 @@ export class SubscriptionsService {
     });
 
     return {
-      succes:true,
-      status:200,
-      message:"obuna o'chirildi"
-    }
+      succes: true,
+      status: 200,
+      message: "obuna o'chirildi",
+    };
   }
 }
