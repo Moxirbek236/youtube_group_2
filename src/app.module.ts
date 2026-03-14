@@ -21,7 +21,7 @@ import { AuthModule } from './modules/auth/auth.module';
     }),
     JwtModule.register({
       global:true,
-      secret:"Shaftoli",
+      secret: process.env.JWT_SECRET ?? "Shaftoli",
       signOptions:{
         expiresIn:"2h"
       }

@@ -1,9 +1,9 @@
 import { Controller, Post, Body, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { RegisterDto } from './dto/authDto';
+import { LoginDto, RegisterDto } from './dto/authDto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
-import { ApiConsumes, ApiBody } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {
@@ -38,5 +38,11 @@ export class AuthController {
       payload.avatar = await this.cloudinaryService.uploadImage(avatar)
     }
     return this.authService.register(payload)
+  }
+
+  @Post("login")
+  @ApiBody({ type: LoginDto })
+  async login(@Body() payload: LoginDto) {
+    return this.authService.login(payload)
   }
 }
