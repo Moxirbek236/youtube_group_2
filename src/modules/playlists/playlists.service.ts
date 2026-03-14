@@ -37,20 +37,19 @@ export class PlaylistsService {
     const { page = 1, limit = 10 } = query || {};
     const skip = (page - 1) * limit;
 
-    const [data, total] = await this.prisma.$transaction([
-      this.prisma.playlist.findMany({
-        where: { authorId },
-        skip: Number(skip),
-        take: Number(limit),
-        select: {
-          id: true,
-          title: true,
-          authorId: true,
-          createdAt: true,
-        },
-      }),
-      this.prisma.playlist.count({ where: { authorId } }),
-    ]);
+    const data = await this.prisma.playlist.findMany({
+      where: { authorId },
+      skip: Number(skip),
+      take: Number(limit),
+      select: {
+        id: true,
+        title: true,
+        authorId: true,
+        createdAt: true,
+      },
+    });
+
+    const total = await this.prisma.playlist.count({ where: { authorId } });
 
     return {
       success: true,
@@ -73,6 +72,7 @@ export class PlaylistsService {
         title: true,
         authorId: true,
         createdAt: true,
+        videos: true,
       },
     });
 

@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -13,9 +13,10 @@ async function bootstrap() {
     }),
   );
 
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix('api/v2');
   const config = new DocumentBuilder()
     .setTitle('youtube.com')
+    .setVersion("v2")
     .addBearerAuth(
       {
         type: 'http',
@@ -29,5 +30,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('swagger', app, document);
   await app.listen(process.env.PORT ?? 3001);
+  Logger.debug(`Server is running ${process.env.PORT ?? 3001}`)
 }
 bootstrap();
