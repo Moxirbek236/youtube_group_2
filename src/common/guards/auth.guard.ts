@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { PrismaService } from 'src/core/prisma/prisma.service';
@@ -19,14 +19,15 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      const data = this.jwtService.verify(token, { secret: process.env.JWT_SECRET })
+      // JwtModule is configured globally; don't override secret here.
+      const data = await this.jwtService.verifyAsync(token)
       
       const user = await this.prisma.user.findUnique({ 
         where: { id: data.id }
       })
 
       if (!user) {
-        throw new UnauthorizedException("user not foun")
+        throw new UnauthorizedException("user not found")
       }
 
       request['user'] = user
@@ -36,7 +37,7 @@ export class AuthGuard implements CanActivate {
       if (error instanceof UnauthorizedException) {
         throw error
       }
-      throw new UnauthorizedException(error)
+      throw new UnauthorizedException("invalid token")
     }
   }
 }

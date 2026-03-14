@@ -1,34 +1,45 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/common';
 import { NotificationService } from './notification.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
+import { Roles } from 'src/common/decorators/role.decorators';
+import { Role } from '@prisma/client';
+import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('notification')
 export class NotificationController {
-  constructor(private readonly notificationService: NotificationService) {}
+  constructor(private readonly notificationService: NotificationService) { }
 
-  @Post()
-  create(@Body() createNotificationDto: CreateNotificationDto) {
-    return this.notificationService.create(createNotificationDto);
-  }
 
   @Get()
-  findAll() {
-    return this.notificationService.findAll();
+  @Roles(Role.ADMIN, Role.SUPERADMIN, Role.USER)
+  @ApiOperation({ summary: "Barcha notificationlarni olish" })
+  findAll(
+    @Req() req: any
+  ) {
+    return this.notificationService.findAll(req['user'].id);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.notificationService.findOne(+id);
+
+
+  @Patch(":id/read")
+  @Roles(Role.ADMIN, Role.SUPERADMIN, Role.USER)
+  @ApiOperation({ summary: "Notificationni o'qildi deb belgilash" })
+  markAsRead(
+    @Param("id") id: number, @Req() req: any
+  ) {
+    return this.notificationService.markAsRead(id, req['user'].id)
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateNotificationDto: UpdateNotificationDto) {
-    return this.notificationService.update(+id, updateNotificationDto);
+
+  @Patch("read-all")
+  @Roles(Role.ADMIN, Role.SUPERADMIN, Role.USER)
+  @ApiOperation({ summary: "Hammasi o'qildi deb belgilash" })
+  markAllAsRead(
+    @Req() req: any
+  ) {
+    return this.notificationService.markAllAsRead(req['user'].id)
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.notificationService.remove(+id);
-  }
+
 }

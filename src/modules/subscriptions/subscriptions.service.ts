@@ -8,10 +8,15 @@ import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { PaginationDto } from './entities/subscription.entity';
+import { NotificationService } from '../notification/notification.service';
+import { NotificationType } from '@prisma/client';
 
 @Injectable()
 export class SubscriptionsService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly notificationService: NotificationService
+  ) { }
 
   async create(createSubscriptionDto: any, subscriberid: number) {
     const subscriber = await this.prismaService.user.findFirst({
@@ -38,7 +43,7 @@ export class SubscriptionsService {
       throw new NotFoundException('Token xato!!!');
     }
 
-    await this.prismaService.subscription.create({
+    const newChannel = await this.prismaService.subscription.create({
       data: {
         channelId: createSubscriptionDto.channelId,
         subscriberId: subscriberid,
@@ -46,15 +51,23 @@ export class SubscriptionsService {
       },
     });
 
+
+    await this.notificationService.createNotification(
+      newChannel.channelId,
+      NotificationType.NEW_VIDEO,
+      "New subscriber",
+      "New subscriber joined your channel"
+    )
+
     return {
       success: true,
       status: 200,
       message: 'Subscribed true',
     };
+
   }
 
   async findMeSubsctiptions(ownerid: number, query?: PaginationDto) {
-    console.log('salom');
 
     const page = Number(query?.page) || 1;
     const limit = Number(query?.limit) || 10;
@@ -92,7 +105,6 @@ export class SubscriptionsService {
     };
   }
   async findMeSubsctiptionsFeed(ownerid: number, query?: PaginationDto) {
-    console.log('salom');
 
     const page = Number(query?.page) || 1;
     const limit = Number(query?.limit) || 10;
@@ -127,15 +139,15 @@ export class SubscriptionsService {
     for (let channel = 0; channel < subscriptionsMe.length; channel++) {
       const element = subscriptionsMe[channel];
       feedVideos = await this.prismaService.video.findMany({
-        where: { authorId: element.channelId},
+        where: { authorId: element.channelId },
       });
     }
-    
-    console.log(feedVideos); 
+
+    console.log(feedVideos);
     return {
       succes: true,
       status: 200,
-      data: subscriptionsMe,
+      data: feedVideos,
     };
   }
 
