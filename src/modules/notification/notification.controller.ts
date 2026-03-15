@@ -1,11 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Param,
+  ParseIntPipe,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { NotificationService } from './notification.service';
-import { CreateNotificationDto } from './dto/create-notification.dto';
-import { UpdateNotificationDto } from './dto/update-notification.dto';
 import { Roles } from 'src/common/decorators/role.decorators';
 import { Role } from '@prisma/client';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from 'src/common/guards/auth.guard';
+import { RolesGuard } from 'src/common/guards/checkRole.guard';
 
+@ApiTags('Notification')
+@UseGuards(AuthGuard, RolesGuard)
+@ApiBearerAuth('token')
 @Controller('notification')
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) { }
@@ -13,7 +24,7 @@ export class NotificationController {
 
   @Get()
   @Roles(Role.ADMIN, Role.SUPERADMIN, Role.USER)
-  @ApiOperation({ summary: "Barcha notificationlarni olish" })
+  @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
   findAll(
     @Req() req: any
   ) {
@@ -24,9 +35,9 @@ export class NotificationController {
 
   @Patch(":id/read")
   @Roles(Role.ADMIN, Role.SUPERADMIN, Role.USER)
-  @ApiOperation({ summary: "Notificationni o'qildi deb belgilash" })
+  @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
   markAsRead(
-    @Param("id") id: number, @Req() req: any
+    @Param("id", ParseIntPipe) id: number, @Req() req: any
   ) {
     return this.notificationService.markAsRead(id, req['user'].id)
   }
@@ -34,7 +45,7 @@ export class NotificationController {
 
   @Patch("read-all")
   @Roles(Role.ADMIN, Role.SUPERADMIN, Role.USER)
-  @ApiOperation({ summary: "Hammasi o'qildi deb belgilash" })
+  @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
   markAllAsRead(
     @Req() req: any
   ) {

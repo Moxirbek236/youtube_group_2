@@ -1,11 +1,10 @@
 import {
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
-import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { PaginationDto } from './entities/subscription.entity';
 import { NotificationService } from '../notification/notification.service';
@@ -18,7 +17,24 @@ export class SubscriptionsService {
     private readonly notificationService: NotificationService
   ) { }
 
-  async create(createSubscriptionDto: any, subscriberid: number) {
+  private userPublicSelect() {
+    return {
+      id: true,
+      email: true,
+      username: true,
+      firstName: true,
+      lastName: true,
+      avatar: true,
+      status: true,
+      role: true,
+      is_email_verified: true,
+      is_phone_verified: true,
+      createdAt: true,
+      updatedAt: true,
+    } as const;
+  }
+
+  async create(createSubscriptionDto: { channelId: number; notificationsEnabled?: boolean }, subscriberid: number) {
     const subscriber = await this.prismaService.user.findFirst({
       where: {
         id: subscriberid,
@@ -43,6 +59,17 @@ export class SubscriptionsService {
       throw new NotFoundException('Token xato!!!');
     }
 
+    const existingSubscription = await this.prismaService.subscription.findFirst({
+      where: {
+        channelId: createSubscriptionDto.channelId,
+        subscriberId: subscriberid,
+      },
+    });
+
+    if (existingSubscription) {
+      throw new ConflictException('Siz bu channelga allaqachon obuna bolgansiz');
+    }
+
     const newChannel = await this.prismaService.subscription.create({
       data: {
         channelId: createSubscriptionDto.channelId,
@@ -54,10 +81,10 @@ export class SubscriptionsService {
 
     await this.notificationService.createNotification(
       newChannel.channelId,
-      NotificationType.NEW_VIDEO,
+      NotificationType.NEW_SUBSCRIBER,
       "New subscriber",
       "New subscriber joined your channel"
-    )
+    );
 
     return {
       success: true,
@@ -91,8 +118,12 @@ export class SubscriptionsService {
         id: true,
         notificationsEnabled: true,
         createdAt: true,
-        channel: true,
-        subscriber: true,
+        channel: {
+          select: this.userPublicSelect(),
+        },
+        subscriber: {
+          select: this.userPublicSelect(),
+        },
       },
       skip: skip,
       take: limit,
@@ -134,16 +165,18 @@ export class SubscriptionsService {
       take: limit,
     });
 
-    let feedVideos;
+    const channelIds = subscriptionsMe.map((item) => item.channelId);
+    const feedVideos = channelIds.length
+      ? await this.prismaService.video.findMany({
+          where: {
+            authorId: {
+              in: channelIds,
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+        })
+      : [];
 
-    for (let channel = 0; channel < subscriptionsMe.length; channel++) {
-      const element = subscriptionsMe[channel];
-      feedVideos = await this.prismaService.video.findMany({
-        where: { authorId: element.channelId },
-      });
-    }
-
-    console.log(feedVideos);
     return {
       succes: true,
       status: 200,
@@ -151,8 +184,31 @@ export class SubscriptionsService {
     };
   }
 
-  findOne(id: number, ownerid: number) {
-    return `This action returns a #${id} subscription`;
+  async findOne(id: number, ownerid: number) {
+    const subscription = await this.prismaService.subscription.findFirst({
+      where: {
+        id: Number(id),
+        subscriberId: ownerid,
+      },
+      select: {
+        id: true,
+        notificationsEnabled: true,
+        createdAt: true,
+        channel: {
+          select: this.userPublicSelect(),
+        },
+      },
+    });
+
+    if (!subscription) {
+      throw new NotFoundException('Bunday obunangiz mavjud emas!');
+    }
+
+    return {
+      success: true,
+      status: 200,
+      data: subscription,
+    };
   }
 
   async update(
@@ -160,36 +216,22 @@ export class SubscriptionsService {
     updateSubscriptionDto: UpdateSubscriptionDto,
     ownerid: number,
   ) {
-    const owner_db = await this.prismaService.user.findFirst({
-      where: {
-        id: ownerid,
-      },
-      select: { subscriptions: true },
-    });
-
     const subscription = await this.prismaService.subscription.findFirst({
       where: {
-        id,
+        id: Number(id),
       },
     });
-
-    for (let i = 0; i < owner_db?.subscriptions.length!; i++) {
-      const element = owner_db?.subscriptions[i];
-      if (element?.id != id) {
-        throw new ForbiddenException('BU sizning obunangiz emas');
-      }
-    }
-
-    if (!owner_db) {
-      throw new NotFoundException('Bunday channel/user topilmadi');
-    }
 
     if (!subscription) {
       throw new NotFoundException('Bunday obunangiz mavjud emas!');
     }
 
+    if (subscription.subscriberId !== ownerid) {
+      throw new ForbiddenException('BU sizning obunangiz emas');
+    }
+
     const data = await this.prismaService.subscription.update({
-      where: { id },
+      where: { id: Number(id) },
       data: {
         notificationsEnabled: updateSubscriptionDto.notificationsEnabled,
       },
@@ -202,39 +244,20 @@ export class SubscriptionsService {
     };
   }
 
-  async remove(id: number, ownerid: number) {
-    const owner_db = await this.prismaService.user.findFirst({
-      where: {
-        id: ownerid,
-      },
-      select: {
-        subscriptions: true,
-      },
-    });
-
+  async remove(channelId: number, ownerid: number) {
     const subscription = await this.prismaService.subscription.findFirst({
       where: {
-        id,
+        channelId: Number(channelId),
+        subscriberId: ownerid,
       },
     });
-
-    for (let i = 0; i < owner_db?.subscriptions.length!; i++) {
-      const element = owner_db?.subscriptions[i];
-      if (element?.id != id) {
-        throw new ForbiddenException('BU sizning obunangiz emas');
-      }
-    }
-
-    if (!owner_db) {
-      throw new NotFoundException('Bunday channel/user topilmadi');
-    }
 
     if (!subscription) {
       throw new NotFoundException('Bunday obunangiz mavjud emas!');
     }
 
     await this.prismaService.subscription.delete({
-      where: { id },
+      where: { id: subscription.id },
     });
 
     return {

@@ -67,7 +67,7 @@ export class SubscriptionsController {
   @Get(':id')
   @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
   @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
-  findOne(@Param('id') id: number, @Req() req: any) {
+  findOne(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
     return this.subscriptionsService.findOne(id, req['user'].id);
   }
 
@@ -76,7 +76,7 @@ export class SubscriptionsController {
   @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
   @ApiBody({ type: UpdateSubscriptionDto })
   update(
-    @Param('id') id: number,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateSubscriptionDto: UpdateSubscriptionDto,
     @Req() req: any,
   ) {
@@ -90,7 +90,7 @@ export class SubscriptionsController {
   @Delete(':channelId/subscribe')
   @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
   @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
-  remove(@Param('channelId') channelId: number, @Req() req: any) {
+  remove(@Param('channelId', ParseIntPipe) channelId: number, @Req() req: any) {
     return this.subscriptionsService.remove(channelId, req['user'].id);
   }
 }
