@@ -54,16 +54,4 @@ export class PlaylistVideosService {
   async findAll() {
     const data = await this.prisma.playlistVideo.findMany({})
   }
-
-  findOne(id: number) {
-    return `This action returns a #${id} playlistVideo`;
-  }
-
-  update(id: number, updatePlaylistVideoDto: UpdatePlaylistVideoDto) {
-    return `This action updates a #${id} playlistVideo`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} playlistVideo`;
-  }
 }
