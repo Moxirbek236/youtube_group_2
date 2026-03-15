@@ -3,7 +3,7 @@ import {
   Get,
   Post,
   Body,
-  Patch,
+  Put,
   Param,
   Delete,
   UseGuards,
@@ -37,36 +37,37 @@ export class PlaylistsController {
     return this.playlistsService.create(createPlaylistDto, req['user'].id);
   }
 
-  @Get('users/:userId')
+  @Get('users/:userId/playlists')
   @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
   @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
   findAll(
     @Param('userId', new ParseIntPipe()) userId,
+    @Req() req: any,
     @Query() query?: PaginationDto,
   ) {
-    return this.playlistsService.findAll(userId, query);
+    return this.playlistsService.findAll(userId, req['user'].id, query);
   }
 
   @Get('playlists/me')
   @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
   @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
   findAllMe(@Req() req: any, @Query() query?: PaginationDto) {
-    return this.playlistsService.findAll(req['user'].id, query);
+    return this.playlistsService.findAll(req['user'].id, req['user'].id, query);
   }
 
   @Get('playlists/:id')
   @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
   @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
-  findOne(@Param('id') id: number, @Req() req: any) {
+  findOne(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
     return this.playlistsService.findOne(id, req['user'].id);
   }
 
-  @Patch('playlists/:id')
+  @Put('playlists/:id')
   @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
   @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
   @ApiBody({ type: UpdatePlaylistDto })
   update(
-    @Param('id') id: number,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updatePlaylistDto: UpdatePlaylistDto,
     @Req() req: any,
   ) {
@@ -76,7 +77,7 @@ export class PlaylistsController {
   @Delete('playlists/:id')
   @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
   @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
-  remove(@Param('id') id: number, @Req() req: any) {
+  remove(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
     return this.playlistsService.remove(id, req['user'].id);
   }
 }

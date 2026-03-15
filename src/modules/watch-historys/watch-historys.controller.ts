@@ -1,34 +1,58 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { WatchHistorysService } from './watch-historys.service';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Role } from '@prisma/client';
+import { Roles } from 'src/common/decorators/role.decorators';
+import { AuthGuard } from 'src/common/guards/auth.guard';
+import { RolesGuard } from 'src/common/guards/checkRole.guard';
 import { CreateWatchHistoryDto } from './dto/create-watch-history.dto';
-import { UpdateWatchHistoryDto } from './dto/update-watch-history.dto';
+import { PaginationDto } from './entities/watch-history.entity';
+import { WatchHistorysService } from './watch-historys.service';
 
-@Controller('watch-historys')
+@ApiTags('watch-history')
+@UseGuards(AuthGuard, RolesGuard)
+@ApiBearerAuth('token')
+@Controller()
 export class WatchHistorysController {
   constructor(private readonly watchHistorysService: WatchHistorysService) {}
 
-  @Post()
-  create(@Body() createWatchHistoryDto: CreateWatchHistoryDto) {
-    return this.watchHistorysService.create(createWatchHistoryDto);
+  @Post('videos/:id/view')
+  @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
+  @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
+  @ApiBody({ type: CreateWatchHistoryDto })
+  create(
+    @Param('id', ParseIntPipe) videoId: number,
+    @Body() createWatchHistoryDto: CreateWatchHistoryDto,
+    @Req() req: any,
+  ) {
+    return this.watchHistorysService.recordView(
+      videoId,
+      req['user'].id,
+      createWatchHistoryDto,
+    );
   }
 
-  @Get()
-  findAll() {
-    return this.watchHistorysService.findAll();
+  @Get('users/me/history')
+  @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
+  @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
+  findAll(@Req() req: any, @Query() query?: PaginationDto) {
+    return this.watchHistorysService.findAll(req['user'].id, query);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.watchHistorysService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateWatchHistoryDto: UpdateWatchHistoryDto) {
-    return this.watchHistorysService.update(+id, updateWatchHistoryDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.watchHistorysService.remove(+id);
+  @Delete('users/me/history')
+  @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
+  @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
+  remove(@Req() req: any) {
+    return this.watchHistorysService.clear(req['user'].id);
   }
 }
