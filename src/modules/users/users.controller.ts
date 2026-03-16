@@ -8,12 +8,12 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { AuthGuard } from 'src/common/guards/auth.guard';
 import { RolesGuard } from 'src/common/guards/checkRole.guard';
 import { Roles } from 'src/common/decorators/role.decorators';
 import { Role } from '@prisma/client';
 import { ApiBody, ApiConsumes, ApiQuery } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { AuthGuard } from 'src/common/guards/checkToken.guard';
 
 @Controller('users')
 export class UsersController {
@@ -32,16 +32,15 @@ export class UsersController {
         email: { type: "string" },
         username: { type: "string" },
         password: { type: "string" },
-        avatar: { type: "string", format: "binary" }, // swagger uchun
+        avatar: { type: "string", format: "binary" }, 
       },
     },
   })
   @UseInterceptors(FileInterceptor("avatar"))
   createAdminUser(
     @Body() createUserDto: CreateUserDto,
-    @UploadedFile() file: Express.Multer.File, // file keladi
+    @UploadedFile() file: Express.Multer.File, 
   ) {
-    // Service ichida Cloudinary ga upload qiladi va URL saqlaydi
     return this.usersService.createAdminUser(createUserDto, file);
   }
 

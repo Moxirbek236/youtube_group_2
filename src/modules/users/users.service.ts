@@ -93,7 +93,7 @@ export class UsersService {
   async remove(userId: number) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-    });
+    })
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -103,8 +103,8 @@ export class UsersService {
 
     await this.prisma.user.delete({
       where: { id: userId },
-    });
+    })
 
-    return { message: 'User removed successfully.' };
+    return { message: 'User removed successfully.' }
   }
 }
