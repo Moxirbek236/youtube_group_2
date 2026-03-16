@@ -13,6 +13,14 @@ import { PaginationDto } from './entities/playlist.entity';
 export class PlaylistsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private normalizeBigInts<T>(value: T): T {
+    return JSON.parse(
+      JSON.stringify(value, (_, currentValue) =>
+        typeof currentValue === 'bigint' ? Number(currentValue) : currentValue,
+      ),
+    ) as T;
+  }
+
   private playlistSelect() {
     return {
       id: true,
@@ -79,7 +87,7 @@ export class PlaylistsService {
       success: true,
       status: 201,
       message: 'Playlist yaratildi',
-      data,
+      data: this.normalizeBigInts(data),
     };
   }
 
@@ -105,7 +113,7 @@ export class PlaylistsService {
       success: true,
       status: 200,
       message: 'Playlistlar olindi',
-      data,
+      data: this.normalizeBigInts(data),
       meta: {
         total,
         page: Number(page),
@@ -128,7 +136,7 @@ export class PlaylistsService {
     return {
       success: true,
       message: 'Playlist olindi',
-      data,
+      data: this.normalizeBigInts(data),
       status: 200,
     };
   }
@@ -146,7 +154,7 @@ export class PlaylistsService {
       success: true,
       message: 'Playlist yangilandi',
       status: 200,
-      data,
+      data: this.normalizeBigInts(data),
     };
   }
 

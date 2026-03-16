@@ -1,34 +1,89 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Role } from '@prisma/client';
+import { Roles } from 'src/common/decorators/role.decorators';
+import { AuthGuard } from 'src/common/guards/auth.guard';
+import { RolesGuard } from 'src/common/guards/checkRole.guard';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
+import { CommentsQueryDto } from './entities/comment.entity';
 
-@Controller('comments')
+@ApiTags('Comments')
+@Controller()
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
-  @Post()
-  create(@Body() createCommentDto: CreateCommentDto) {
-    return this.commentsService.create(createCommentDto);
+  @UseGuards(AuthGuard, RolesGuard)
+  @ApiBearerAuth('token')
+  @Post('videos/:videoId/comments')
+  @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
+  @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
+  @ApiBody({ type: CreateCommentDto })
+  create(
+    @Param('videoId', ParseIntPipe) videoId: number,
+    @Body() createCommentDto: CreateCommentDto,
+    @Req() req: any,
+  ) {
+    return this.commentsService.create(videoId, createCommentDto, req['user']);
   }
 
-  @Get()
-  findAll() {
-    return this.commentsService.findAll();
+  @Get('videos/:videoId/comments')
+  @ApiOperation({ summary: 'PUBLIC' })
+  findAll(
+    @Param('videoId', ParseIntPipe) videoId: number,
+    @Query() query?: CommentsQueryDto,
+  ) {
+    return this.commentsService.findAll(videoId, query);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.commentsService.findOne(+id);
+  @Get('comments/:id')
+  @ApiOperation({ summary: 'PUBLIC' })
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.commentsService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCommentDto: UpdateCommentDto) {
-    return this.commentsService.update(+id, updateCommentDto);
+  @UseGuards(AuthGuard, RolesGuard)
+  @ApiBearerAuth('token')
+  @Patch('comments/:id')
+  @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
+  @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateCommentDto: UpdateCommentDto,
+    @Req() req: any,
+  ) {
+    return this.commentsService.update(id, updateCommentDto, req['user']);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.commentsService.remove(+id);
+  @UseGuards(AuthGuard, RolesGuard)
+  @ApiBearerAuth('token')
+  @Patch('comments/:id/pin')
+  @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
+  @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
+  togglePin(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    return this.commentsService.togglePin(id, req['user']);
+  }
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @ApiBearerAuth('token')
+  @Delete('comments/:id')
+  @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
+  @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
+  remove(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    return this.commentsService.remove(id, req['user']);
   }
 }
+

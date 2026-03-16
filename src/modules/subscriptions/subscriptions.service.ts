@@ -17,6 +17,14 @@ export class SubscriptionsService {
     private readonly notificationService: NotificationService
   ) { }
 
+  private normalizeBigInts<T>(value: T): T {
+    return JSON.parse(
+      JSON.stringify(value, (_, currentValue) =>
+        typeof currentValue === 'bigint' ? Number(currentValue) : currentValue,
+      ),
+    ) as T;
+  }
+
   private userPublicSelect() {
     return {
       id: true,
@@ -180,7 +188,7 @@ export class SubscriptionsService {
     return {
       succes: true,
       status: 200,
-      data: feedVideos,
+      data: this.normalizeBigInts(feedVideos),
     };
   }
 

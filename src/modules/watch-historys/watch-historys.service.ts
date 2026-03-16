@@ -7,6 +7,14 @@ import { PaginationDto } from './entities/watch-history.entity';
 export class WatchHistorysService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private normalizeBigInts<T>(value: T): T {
+    return JSON.parse(
+      JSON.stringify(value, (_, currentValue) =>
+        typeof currentValue === 'bigint' ? Number(currentValue) : currentValue,
+      ),
+    ) as T;
+  }
+
   async recordView(
     videoId: number,
     userId: number,
@@ -127,7 +135,7 @@ export class WatchHistorysService {
       success: true,
       status: 200,
       message: 'Watch history olindi',
-      data,
+      data: this.normalizeBigInts(data),
       meta: {
         total,
         page: Number(page),
@@ -149,4 +157,3 @@ export class WatchHistorysService {
     };
   }
 }
-

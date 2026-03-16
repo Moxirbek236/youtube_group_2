@@ -46,7 +46,7 @@ export class LikesService {
 
     await this.prisma.comment.update({
       where: { id: commentId },
-      data: { likesCount },
+      data: { likesCount, dislikesCount },
     });
 
     return { commentId, likesCount, dislikesCount };
@@ -247,4 +247,3 @@ export class LikesService {
     return this.removeVideoReaction(videoId, userId, LikeType.DISLIKE);
   }
 }
-
