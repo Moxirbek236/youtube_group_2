@@ -182,7 +182,7 @@ enum LikeType {
 }
 
 // KEYINROQ QO'SHISH MUMKIN BO'LGAN MODELLAR:
-/*
+
 model WatchHistory {
   id          String   @id @default(cuid())
   watchedAt   DateTime @default(now())
@@ -215,7 +215,7 @@ enum NotificationType {
   COMMENT_REPLY
   MENTION
 }
-*/
+
 
 enum Role {
   SUPERADMIN

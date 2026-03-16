@@ -1,34 +1,79 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Param,
+  ParseIntPipe,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Role } from '@prisma/client';
+import { Roles } from 'src/common/decorators/role.decorators';
+import { AuthGuard } from 'src/common/guards/auth.guard';
+import { RolesGuard } from 'src/common/guards/checkRole.guard';
 import { LikesService } from './likes.service';
-import { CreateLikeDto } from './dto/create-like.dto';
-import { UpdateLikeDto } from './dto/update-like.dto';
 
-@Controller('likes')
+@ApiTags('likes')
+@UseGuards(AuthGuard, RolesGuard)
+@ApiBearerAuth('token')
+@Controller()
 export class LikesController {
   constructor(private readonly likesService: LikesService) {}
 
-  @Post()
-  create(@Body() createLikeDto: CreateLikeDto) {
-    return this.likesService.create(createLikeDto);
+  @Post('comments/:id/like')
+  @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
+  @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
+  likeComment(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    return this.likesService.likeComment(id, req['user'].id);
   }
 
-  @Get()
-  findAll() {
-    return this.likesService.findAll();
+  @Post('comments/:id/dislike')
+  @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
+  @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
+  dislikeComment(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    return this.likesService.dislikeComment(id, req['user'].id);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.likesService.findOne(+id);
+  @Delete('comments/:id/like')
+  @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
+  @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
+  unlikeComment(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    return this.likesService.unlikeComment(id, req['user'].id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateLikeDto: UpdateLikeDto) {
-    return this.likesService.update(+id, updateLikeDto);
+  @Delete('comments/:id/dislike')
+  @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
+  @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
+  undislikeComment(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    return this.likesService.undislikeComment(id, req['user'].id);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.likesService.remove(+id);
+  @Post('videos/:id/like')
+  @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
+  @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
+  likeVideo(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    return this.likesService.likeVideo(id, req['user'].id);
+  }
+
+  @Post('videos/:id/dislike')
+  @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
+  @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
+  dislikeVideo(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    return this.likesService.dislikeVideo(id, req['user'].id);
+  }
+
+  @Delete('videos/:id/like')
+  @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
+  @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
+  unlikeVideo(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    return this.likesService.unlikeVideo(id, req['user'].id);
+  }
+
+  @Delete('videos/:id/dislike')
+  @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
+  @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
+  undislikeVideo(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    return this.likesService.undislikeVideo(id, req['user'].id);
   }
 }

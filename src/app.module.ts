@@ -9,10 +9,10 @@ import { LikesModule } from './modules/likes/likes.module';
 import { WatchHistorysModule } from './modules/watch-historys/watch-historys.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { ConfigModule } from '@nestjs/config';
-import { AuthModule } from './modules/auth/auth.module';
 import { PrismaModule } from './core/prisma/prisma.module';
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import { JwtModule } from '@nestjs/jwt';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -21,7 +21,7 @@ import { JwtModule } from '@nestjs/jwt';
     }),
     JwtModule.register({
       global:true,
-      secret:"Shaftoli",
+      secret: process.env.JWT_SECRET ?? "Shaftoli",
       signOptions:{
         expiresIn:"2h"
       }

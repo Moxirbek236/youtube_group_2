@@ -1,9 +1,9 @@
-import { 
-  Controller, Get, Post, Body, Patch, Param, Delete, 
-  UseGuards, UseInterceptors, UploadedFile, 
+import {
+  Controller, Get, Post, Body, Param,
+  UseGuards, UseInterceptors, UploadedFile,
   Req,
   Put,
-  Query
+  ParseIntPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -11,10 +11,12 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { RolesGuard } from 'src/common/guards/checkRole.guard';
 import { Roles } from 'src/common/decorators/role.decorators';
 import { Role } from '@prisma/client';
-import { ApiBody, ApiConsumes, ApiQuery } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from 'src/common/guards/checkToken.guard';
 
+@ApiTags('Users')
+@ApiBearerAuth('token')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -22,6 +24,7 @@ export class UsersController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.SUPERADMIN, Role.ADMIN)
   @Post()
+  @ApiOperation({ summary: `${Role.ADMIN} ${Role.SUPERADMIN}` })
   @ApiConsumes("multipart/form-data")
   @ApiBody({
     schema: {
@@ -44,17 +47,26 @@ export class UsersController {
     return this.usersService.createAdminUser(createUserDto, file);
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
   @Get()
+  @ApiOperation({ summary: `${Role.ADMIN} ${Role.SUPERADMIN}` })
   findAll() {
     return this.usersService.findAll();
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
   @Get(':id')
-  findOne(@Req() req:Request) {
-    return this.usersService.findOneMe(req["user"].id);
+  @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
+  findOne(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    return this.usersService.findOne(id, req['user']);
   }
 
-   @Put()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.ADMIN, Role.SUPERADMIN)
+  @Put()
+  @ApiOperation({ summary: `${Role.USER} ${Role.ADMIN} ${Role.SUPERADMIN}` })
   @ApiConsumes("multipart/form-data")
   @ApiBody({
     schema: {
@@ -71,16 +83,8 @@ export class UsersController {
   updateProfile(
     @Body() dto: UpdateUserDto,
     @UploadedFile() file: Express.Multer.File,
-    @Req()req:Request
+    @Req() req: any
   ) {
-    return this.usersService.updateProfile(req["user"].id, dto, file);
+    return this.usersService.updateProfile(req['user'].id, dto, file);
   }
-
- 
-
- 
- 
-
- 
- 
 }

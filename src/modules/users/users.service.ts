@@ -1,9 +1,15 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { CloudinaryService } from 'src/modules/cloudinary/cloudinary.service';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Prisma, Role } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -11,6 +17,23 @@ export class UsersService {
     private prisma: PrismaService,
     private cloudinaryService: CloudinaryService,
   ) { }
+
+  private userPublicSelect() {
+    return {
+      id: true,
+      email: true,
+      username: true,
+      firstName: true,
+      lastName: true,
+      avatar: true,
+      status: true,
+      role: true,
+      is_email_verified: true,
+      is_phone_verified: true,
+      createdAt: true,
+      updatedAt: true,
+    } satisfies Prisma.UserSelect;
+  }
 
   async createAdminUser(
     createUserDto: CreateUserDto,
@@ -45,26 +68,34 @@ export class UsersService {
         avatar: avatarUrl,
         role: 'ADMIN',
       },
+      select: this.userPublicSelect(),
     });
 
     return user;
   }
 
   findAll() {
-    return this.prisma.user.findMany();
+    return this.prisma.user.findMany({
+      select: this.userPublicSelect(),
+    });
   }
 
-  async findOneMe(id: number) {
+  async findOne(id: number, requester: { id: number; role: Role }) {
+    if (requester.role === Role.USER && requester.id !== id) {
+      throw new ForbiddenException("Siz faqat oz profilingizni kora olasiz");
+    }
+
     const existMe = await this.prisma.user.findUnique({
-      where: {
-        id
-      }
-    })
-    if (!existMe) throw new NotFoundException("User is not found")
+      where: { id },
+      select: this.userPublicSelect(),
+    });
+
+    if (!existMe) throw new NotFoundException("User is not found");
+
     return {
       success: true,
-      data: existMe
-    }
+      data: existMe,
+    };
   }
 
   async updateProfile(userId: number, dto: UpdateUserDto, file?: Express.Multer.File) {
@@ -82,11 +113,13 @@ export class UsersService {
         ...dto,
         ...(avatarUrl && { avatar: avatarUrl }),
       },
+      select: this.userPublicSelect(),
     });
 
     return {
       success: true,
-      message: "User succesfully updated"
+      message: "User succesfully updated",
+      data: updatedUser,
     };
   }
 

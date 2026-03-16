@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -17,6 +12,7 @@ enum Status {
   deleted
   blocked
 }
+
 model User {
   id                Int      @id @default(autoincrement())
   email             String   @unique
@@ -32,33 +28,36 @@ model User {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  videos        Video[]
-  comments      Comment[]
-  likes         Like[]
-  subscriptions Subscription[] @relation("UserSubscriptions")
-  subscribers   Subscription[] @relation("UserSubscribers")
-  playlists     Playlist[]
+  videos         Video[]
+  comments       Comment[]
+  likes          Like[]
+  subscriptions  Subscription[] @relation("UserSubscriptions")
+  subscribers    Subscription[] @relation("UserSubscribers")
+  playlists      Playlist[]
+  watchHistories WatchHistory[]
+  notifications  Notification[]
 }
 
 model Video {
-  id            Int          @id @default(autoincrement())
+  id            Int         @id @default(autoincrement())
   title         String
   description   String?
   thumbnail     String?
   videoUrl      String
   duration      Int
-  status        VideoStatus  @default(PROCESSING)
-  visibility    Visibility   @default(PUBLIC)
-  viewsCount    BigInt       @default(0)
-  likesCount    Int          @default(0)
-  dislikesCount Int          @default(0)
-  createdAt     DateTime     @default(now())
+  status        VideoStatus @default(PROCESSING)
+  visibility    Visibility  @default(PUBLIC)
+  viewsCount    BigInt      @default(0)
+  likesCount    Int         @default(0)
+  dislikesCount Int         @default(0)
+  createdAt     DateTime    @default(now())
 
-  authorId      Int
-  author        User         @relation(fields: [authorId], references: [id])
-  comments      Comment[]
-  likes         Like[]
+  authorId       Int
+  author         User            @relation(fields: [authorId], references: [id])
+  comments       Comment[]
+  likes          Like[]
   playlistVideos PlaylistVideo[]
+  watchHistories WatchHistory[]
 }
 
 model Comment {
@@ -77,24 +76,25 @@ model Comment {
 model Subscription {
   id                   Int      @id @default(autoincrement())
   subscriberId         Int
-  subscriber           User     @relation("UserSubscriptions", fields: [subscriberId], references: [id])
   channelId            Int
-  channel              User     @relation("UserSubscribers", fields: [channelId], references: [id])
   notificationsEnabled Boolean  @default(true)
   createdAt            DateTime @default(now())
+
+  subscriber User @relation("UserSubscriptions", fields: [subscriberId], references: [id], onDelete: Cascade)
+  channel    User @relation("UserSubscribers", fields: [channelId], references: [id], onDelete: Cascade)
 
   @@unique([subscriberId, channelId])
 }
 
 model Playlist {
-  id          Int       @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   title       String
   description String?
   visibility  Visibility @default(PUBLIC)
   createdAt   DateTime   @default(now())
 
   authorId Int
-  author   User        @relation(fields: [authorId], references: [id])
+  author   User            @relation(fields: [authorId], references: [id])
   videos   PlaylistVideo[]
 }
 
@@ -133,35 +133,37 @@ enum LikeType {
 }
 
 // KEYINROQ QO'SHISH MUMKIN BO'LGAN MODELLAR:
-/**
- * model WatchHistory {
- * id          String   @id @default(cuid())
- * watchedAt   DateTime @default(now())
- * watchTime   Int      // seconds watched
- * userId      String
- * user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
- * videoId     String
- * video       Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
- * @@unique([userId, videoId])
- * }
- * model Notification {
- * id        String           @id @default(cuid())
- * type      NotificationType
- * title     String
- * message   String
- * isRead    Boolean          @default(false)
- * createdAt DateTime         @default(now())
- * userId    String
- * user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
- * }
- * enum NotificationType {
- * NEW_VIDEO
- * NEW_SUBSCRIBER
- * VIDEO_LIKED
- * COMMENT_REPLY
- * MENTION
- * }
- */
+
+model WatchHistory {
+  id        Int      @id @default(autoincrement())
+  watchedAt DateTime @default(now())
+  watchTime Int // seconds watched
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  videoId   Int
+  video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, videoId])
+}
+
+model Notification {
+  id        Int              @id @default(autoincrement())
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  userId    Int
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum NotificationType {
+  NEW_VIDEO
+  NEW_SUBSCRIBER
+  VIDEO_LIKED
+  COMMENT_REPLY
+  MENTION
+}
 
 enum Role {
   SUPERADMIN
